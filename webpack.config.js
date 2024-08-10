@@ -3,7 +3,7 @@ const path = require("path");
 const TerserPlugin = require("terser-webpack-plugin");
 const { DefinePlugin, optimize } = require("webpack");
 const chalk = require("chalk");
-
+const Dotenv = require('dotenv-webpack')
 /**
  *
  * @param {Object} [options]
@@ -161,6 +161,7 @@ function buildConfig({
       new DefinePlugin({
         BACKEND_HOST: JSON.stringify(backendHost),
       }),
+      new Dotenv(),
       // Apps can only submit a single JS file via the developer portal
       new optimize.LimitChunkCountPlugin({ maxChunks: 1 }),
     ],

@@ -1,10 +1,7 @@
-import { Box, Button, FormField, Grid, ImageCard ,Rows,ArrowLeftIcon , LoadingIndicator, Slider, Title} from "@canva/app-ui-kit";
+import { Box, Button, FormField, Grid, ImageCard ,Rows,ArrowLeftIcon , LoadingIndicator, Slider, Title, Alert} from "@canva/app-ui-kit";
 import {upload} from "@canva/asset"
 import { addNativeElement } from "@canva/design";
 
-import cat from "assets/images/cat.jpg";
-import dog from "assets/images/dog.jpg";
-import rabbit from "assets/images/rabbit.jpg";
 
 import baseStyles from "styles/components.css";
 
@@ -12,7 +9,7 @@ import { useState } from "react";
 import axios from 'axios'
 
 
-const url = 'http://127.0.0.1:8000/upload_image'
+const url = process.env.REACT_APP_MODEL_BACKEND + 'upload_image'
 
 
 
@@ -39,10 +36,13 @@ export const SelectImagePage = (props) => {
     const [blacklevel, setBlacklevel] = useState<number>(0.3);
     const [renderSVG , setRenderSVG] = useState<boolean>(false);
 
+    const [alert, setAlert] = useState<string>("");
+
     async function sendImageRequest() {
         var imageSrc = localStorage.getItem(imageId);
         try {
             setLoading(true);
+            setAlert("Converting image to svg...")
             axios({
                 method: 'post',
                 url: url,
@@ -56,12 +56,14 @@ export const SelectImagePage = (props) => {
                   }
             }).then( res => {
                 setLoading(false);
+                setAlert("");
                 const svgRef = "data:image/svg+xml;base64," + res['data']['svg'];
                 setSvgRef(svgRef);
                 setRenderSVG(true);
             })
         } catch(err) {
             setLoading(false);
+            setAlert(err);
             console.log(err);
         }
     }
@@ -85,14 +87,19 @@ export const SelectImagePage = (props) => {
                 <ArrowLeftIcon /> To Previous Page
             </Button>
         </Rows>
+
         <Rows spacing='2u'>
+            {alert && <Alert tone="info">{alert}</Alert>}
+
+            <Title size="xsmall"> Select an Image </Title>
             <FormField 
             control={(props) => (
                 <Box id={props.id} padding="1u">
-                    <Title size="xsmall"> Select an Image </Title>
+                    
                     <Grid columns={2} spacing="1u">
                         {items.map((item) => (
                             <ImageCard
+                            ariaLabel="Select Image"
                             key={item.key}
                             thumbnailUrl={item.imageSrc}
                             borderRadius="standard"
@@ -129,6 +136,7 @@ export const SelectImagePage = (props) => {
             {renderSVG && 
             <Box padding="2u">
                 <ImageCard 
+                ariaLabel="Add Image to design"
                 thumbnailUrl={svgRef}  
                 borderRadius="standard"
                 selectable={true} 

@@ -6,17 +6,17 @@ NumberInput,
 Rows,
 Text,
 TextInput,
-LoadingIndicator
+LoadingIndicator,
+Alert
 } from "@canva/app-ui-kit";
 import {useEffect, useState} from "react";
 import baseStyles from "styles/components.css";
 
 
-
 import axios from "axios";
 
 
-const url = 'http://127.0.0.1:8000/get_image'
+const url = process.env.REACT_APP_MODEL_BACKEND + 'get_image'
 
 function store_in_localStorage(value,index,array){
     localStorage.setItem(index,value);
@@ -30,9 +30,12 @@ export const GenerateLogoPage = (props) => {
 
     const [loading,setLoading] = useState<boolean>(false);
 
+    const [alert,setAlert] = useState<string>("");
+
     async function sendImageRequest() {
         try {
             setLoading(true);
+            setAlert("Generating images.... it might take a while....")
             await axios({
                 method: 'post',
                 url: url,
@@ -46,14 +49,16 @@ export const GenerateLogoPage = (props) => {
                 }
             }).then( res => {
                 var images = JSON.parse(res.data)
-                console.log(images);
+                localStorage.clear(); // clear all item in local storage
                 images.forEach(store_in_localStorage); // save base64 image to local storage
                 setLoading(false);
+                setAlert("");
                 props.goToNextPage();
             })
         }
         catch (err) {
             setLoading(false);
+            setAlert(err);
             console.log(err);
         }
     }
@@ -62,6 +67,9 @@ export const GenerateLogoPage = (props) => {
     return (
         <div className={baseStyles.scrollContainer}>
         <Rows spacing="2u">
+
+            {alert && <Alert tone="info"> {alert} </Alert>}
+
             <Text>
             Enter the description of the LOGO you want to generate
             </Text>
